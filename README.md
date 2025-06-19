@@ -15,7 +15,7 @@ sh <(wget -O - https://raw.githubusercontent.com/itdoginfo/domain-routing-openwr
 
 ## Автоматическая
 ```
-sh <(wget -O - https://raw.githubusercontent.com/OkflaSSH/script-install-podkop-0.2.5/main/install.sh)
+wget -O /tmp/install.sh https://raw.githubusercontent.com/OkflaSSH/script-install-podkop-0.2.5/main/install.sh && sh /tmp/install.sh
 ```
 
 Скрипт также предложит выбрать, какой туннель будет использоваться. Для выбранного туннеля будут установлены нужные пакеты, а для Wireguard и AmneziaWG также будет предложена автоматическая настройка - прямо в консоли скрипт запросит данные конфига. Для AmneziaWG можно также выбрать вариант с использованием конфига обычного Wireguard и автоматической обфускацией до AmneziaWG.
