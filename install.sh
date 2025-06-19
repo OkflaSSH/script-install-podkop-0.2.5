@@ -7,13 +7,11 @@ mkdir -p "$DOWNLOAD_DIR"
 main() {
     check_system
 
-    # --- НАЧАЛО ИЗМЕНЕНИЯ ---
-    # Загружаем файлы из вашего репозитория OkflaSSH
+    # Загружаем файлы из репозитория OkflaSSH
     echo "Download podkop files from OkflaSSH repository..."
     wget -q -O "$DOWNLOAD_DIR/podkop_0.2.5-1_all.ipk" "https://raw.githubusercontent.com/OkflaSSH/script-install-podkop-0.2.5/main/podkop-0.2.5/podkop_0.2.5-1_all.ipk"
     wget -q -O "$DOWNLOAD_DIR/luci-app-podkop_0.2.5_all.ipk" "https://raw.githubusercontent.com/OkflaSSH/script-install-podkop-0.2.5/main/podkop-0.2.5/luci-app-podkop_0.2.5_all.ipk"
     wget -q -O "$DOWNLOAD_DIR/luci-i18n-podkop-ru_0.2.5.ipk" "https://raw.githubusercontent.com/OkflaSSH/script-install-podkop-0.2.5/main/podkop-0.2.5/luci-i18n-podkop-ru_0.2.5.ipk"
-    # --- КОНЕЦ ИЗМЕНЕНИЯ ---
 
 
     # Проверка, что файлы скачались успешно
@@ -52,7 +50,7 @@ main() {
         printf "\033[32;1mn - Upgrade and install proxy or tunnels\033[0m\n"
 
         while true; do
-            read -r -p '' UPDATE
+            read -r -p '' UPDATE < /dev/tty
             case $UPDATE in
             y)
                 echo "Upgraded podkop..."
@@ -79,7 +77,7 @@ main() {
 
     echo "Русский язык интерфейса ставим? y/n (Need a Russian translation?)"
     while true; do
-        read -r -p '' RUS
+        read -r -p '' RUS < /dev/tty
         case $RUS in
         y)
             # Устанавливаем русский перевод, только если он был скачан
@@ -119,7 +117,7 @@ add_tunnel() {
     echo "6) Skip this step"
 
     while true; do
-        read -r -p '' TUNNEL
+        read -r -p '' TUNNEL < /dev/tty
         case $TUNNEL in
 
         1)
@@ -131,7 +129,7 @@ add_tunnel() {
             opkg install wireguard-tools luci-proto-wireguard luci-app-wireguard
 
             printf "\033[32;1mDo you want to configure the wireguard interface? (y/n): \033[0m\n"
-            read IS_SHOULD_CONFIGURE_WG_INTERFACE
+            read IS_SHOULD_CONFIGURE_WG_INTERFACE < /dev/tty
 
             if [ "$IS_SHOULD_CONFIGURE_WG_INTERFACE" = "y" ] || [ "$IS_SHOULD_CONFIGURE_WG_INTERFACE" = "Y" ]; then
                 wg_awg_setup Wireguard
@@ -146,7 +144,7 @@ add_tunnel() {
             install_awg_packages
 
             printf "\033[32;1mThere are no instructions for manual configure yet. Do you want to configure the amneziawg interface? (y/n): \033[0m\n"
-            read IS_SHOULD_CONFIGURE_WG_INTERFACE
+            read IS_SHOULD_CONFIGURE_WG_INTERFACE < /dev/tty
 
             if [ "$IS_SHOULD_CONFIGURE_WG_INTERFACE" = "y" ] || [ "$IS_SHOULD_CONFIGURE_WG_INTERFACE" = "Y" ]; then
                 wg_awg_setup AmneziaWG
@@ -192,7 +190,6 @@ install_awg_packages() {
     VERSION=$(ubus call system board | jsonfilter -e '@.release.version')
     PKGPOSTFIX="_v${VERSION}_${PKGARCH}_${TARGET}_${SUBTARGET}.ipk"
     
-    # --- ССЫЛКА ОСТАЛАСЬ ПРЕЖНЕЙ, ПРИ НЕОБХОДИМОСТИ ЗАМЕНИТЕ ---
     BASE_URL="https://github.com/Slava-Shchipunov/awg-openwrt/releases/download/"
 
     AWG_DIR="/tmp/amneziawg"
@@ -280,13 +277,13 @@ wg_awg_setup() {
         echo "Do you want to use AmneziaWG config or basic Wireguard config + automatic obfuscation?"
         echo "1) AmneziaWG"
         echo "2) Wireguard + automatic obfuscation"
-        read CONFIG_TYPE
+        read CONFIG_TYPE < /dev/tty
     fi
 
-    read -r -p "Enter the private key (from [Interface]):"$'\n' WG_PRIVATE_KEY_INT
+    read -r -p "Enter the private key (from [Interface]):"$'\n' WG_PRIVATE_KEY_INT < /dev/tty
 
     while true; do
-        read -r -p "Enter internal IP address with subnet, example 192.168.100.5/24 (from [Interface]):"$'\n' WG_IP
+        read -r -p "Enter internal IP address with subnet, example 192.168.100.5/24 (from [Interface]):"$'\n' WG_IP < /dev/tty
         if echo "$WG_IP" | egrep -oq '^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]+$'; then
             break
         else
@@ -294,11 +291,11 @@ wg_awg_setup() {
         fi
     done
 
-    read -r -p "Enter the public key (from [Peer]):"$'\n' WG_PUBLIC_KEY_INT
-    read -r -p "If use PresharedKey, Enter this (from [Peer]). If your don't use leave blank:"$'\n' WG_PRESHARED_KEY_INT
-    read -r -p "Enter Endpoint host without port (Domain or IP) (from [Peer]):"$'\n' WG_ENDPOINT_INT
+    read -r -p "Enter the public key (from [Peer]):"$'\n' WG_PUBLIC_KEY_INT < /dev/tty
+    read -r -p "If use PresharedKey, Enter this (from [Peer]). If your don't use leave blank:"$'\n' WG_PRESHARED_KEY_INT < /dev/tty
+    read -r -p "Enter Endpoint host without port (Domain or IP) (from [Peer]):"$'\n' WG_ENDPOINT_INT < /dev/tty
 
-    read -r -p "Enter Endpoint host port (from [Peer]) [51820]:"$'\n' WG_ENDPOINT_PORT_INT
+    read -r -p "Enter Endpoint host port (from [Peer]) [51820]:"$'\n' WG_ENDPOINT_PORT_INT < /dev/tty
     WG_ENDPOINT_PORT_INT=${WG_ENDPOINT_PORT_INT:-51820}
     if [ "$WG_ENDPOINT_PORT_INT" = '51820' ]; then
         echo $WG_ENDPOINT_PORT_INT
@@ -306,15 +303,15 @@ wg_awg_setup() {
 
     if [ "$PROTOCOL_NAME" = 'AmneziaWG' ]; then
         if [ "$CONFIG_TYPE" = '1' ]; then
-            read -r -p "Enter Jc value (from [Interface]):"$'\n' AWG_JC
-            read -r -p "Enter Jmin value (from [Interface]):"$'\n' AWG_JMIN
-            read -r -p "Enter Jmax value (from [Interface]):"$'\n' AWG_JMAX
-            read -r -p "Enter S1 value (from [Interface]):"$'\n' AWG_S1
-            read -r -p "Enter S2 value (from [Interface]):"$'\n' AWG_S2
-            read -r -p "Enter H1 value (from [Interface]):"$'\n' AWG_H1
-            read -r -p "Enter H2 value (from [Interface]):"$'\n' AWG_H2
-            read -r -p "Enter H3 value (from [Interface]):"$'\n' AWG_H3
-            read -r -p "Enter H4 value (from [Interface]):"$'\n' AWG_H4
+            read -r -p "Enter Jc value (from [Interface]):"$'\n' AWG_JC < /dev/tty
+            read -r -p "Enter Jmin value (from [Interface]):"$'\n' AWG_JMIN < /dev/tty
+            read -r -p "Enter Jmax value (from [Interface]):"$'\n' AWG_JMAX < /dev/tty
+            read -r -p "Enter S1 value (from [Interface]):"$'\n' AWG_S1 < /dev/tty
+            read -r -p "Enter S2 value (from [Interface]):"$'\n' AWG_S2 < /dev/tty
+            read -r -p "Enter H1 value (from [Interface]):"$'\n' AWG_H1 < /dev/tty
+            read -r -p "Enter H2 value (from [Interface]):"$'\n' AWG_H2 < /dev/tty
+            read -r -p "Enter H3 value (from [Interface]):"$'\n' AWG_H3 < /dev/tty
+            read -r -p "Enter H4 value (from [Interface]):"$'\n' AWG_H4 < /dev/tty
         elif [ "$CONFIG_TYPE" = '2' ]; then
             #Default values to wg automatic obfuscation
             AWG_JC=4
