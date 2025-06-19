@@ -1,10 +1,5 @@
 #!/bin/sh
 
-# Прямые ссылки на ВАШИ файлы из репозитория OkflaSSH
-URL_PODKOP="https://raw.githubusercontent.com/OkflaSSH/script-install-podkop-0.2.5/main/podkop-0.2.5/podkop_0.2.5-1_all.ipk"
-URL_LUCI_APP="https://raw.githubusercontent.com/OkflaSSH/script-install-podkop-0.2.5/main/podkop-0.2.5/luci-app-podkop_0.2.5_all.ipk"
-URL_LUCI_I18N="https://raw.githubusercontent.com/OkflaSSH/script-install-podkop-0.2.5/main/podkop-0.2.5/luci-i18n-podkop-ru_0.2.5.ipk"
-
 IS_SHOULD_RESTART_NETWORK=
 DOWNLOAD_DIR="/tmp/podkop"
 mkdir -p "$DOWNLOAD_DIR"
@@ -12,18 +7,15 @@ mkdir -p "$DOWNLOAD_DIR"
 main() {
     check_system
 
-    # --- СКАЧИВАНИЕ ВАШИХ ФАЙЛОВ ---
-    # Мы убрали сложную конструкцию с API и просто скачиваем нужные файлы напрямую
-    echo "Download podkop_0.2.5-1_all.ipk..."
-    wget -q -O "$DOWNLOAD_DIR/podkop_0.2.5-1_all.ipk" "$URL_PODKOP"
+    echo "Download podkop..."
+    wget -q -O "$DOWNLOAD_DIR/podkop_0.2.5-1_all.ipk" "https://raw.githubusercontent.com/OkflaSSH/script-install-podkop-0.2.5/main/podkop-0.2.5/podkop_0.2.5-1_all.ipk"
 
-    echo "Download luci-app-podkop_0.2.5_all.ipk..."
-    wget -q -O "$DOWNLOAD_DIR/luci-app-podkop_0.2.5_all.ipk" "$URL_LUCI_APP"
+    echo "Download luci-app-podkop..."
+    wget -q -O "$DOWNLOAD_DIR/luci-app-podkop_0.2.5_all.ipk" "https://raw.githubusercontent.com/OkflaSSH/script-install-podkop-0.2.5/main/podkop-0.2.5/luci-app-podkop_0.2.5_all.ipk"
 
-    echo "Download luci-i18n-podkop-ru_0.2.5.ipk..."
-    wget -q -O "$DOWNLOAD_DIR/luci-i18n-podkop-ru_0.2.5.ipk" "$URL_LUCI_I18N"
-    # --- КОНЕЦ СКАЧИВАНИЯ ---
-
+    echo "Download luci-i18n-podkop-ru..."
+    wget -q -O "$DOWNLOAD_DIR/luci-i18n-podkop-ru_0.2.5.ipk" "https://raw.githubusercontent.com/OkflaSSH/script-install-podkop-0.2.5/main/podkop-0.2.5/luci-i18n-podkop-ru_0.2.5.ipk"
+    
     echo "opkg update"
     opkg update
 
@@ -76,16 +68,15 @@ main() {
         add_tunnel
     fi
 
-    # Устанавливаем скачанные файлы по маске
-    opkg install $DOWNLOAD_DIR/podkop*.ipk
-    opkg install $DOWNLOAD_DIR/luci-app-podkop*.ipk
+    opkg install $DOWNLOAD_DIR/podkop_*.ipk
+    opkg install $DOWNLOAD_DIR/luci-app-podkop_*.ipk
 
     echo "Русский язык интерфейса ставим? y/n (Need a Russian translation?)"
     while true; do
         read -r -p '' RUS
         case $RUS in
         y)
-            opkg install $DOWNLOAD_DIR/luci-i18n-podkop-ru*.ipk
+            opkg install $DOWNLOAD_DIR/luci-i18n-podkop-ru_*.ipk
             break
             ;;
 
@@ -99,7 +90,7 @@ main() {
         esac
     done
 
-    rm -f $DOWNLOAD_DIR/podkop*.ipk $DOWNLOAD_DIR/luci-app-podkop*.ipk $DOWNLOAD_DIR/luci-i18n-podkop-ru*.ipk
+    rm -f $DOWNLOAD_DIR/*.ipk
 
     if [ "$IS_SHOULD_RESTART_NETWORK" ]; then
         printf "\033[32;1mRestart network\033[0m\n"
@@ -182,9 +173,7 @@ handler_network_restart() {
 }
 
 install_awg_packages() {
-    # Получение pkgarch с наибольшим приоритетом
     PKGARCH=$(opkg print-architecture | awk 'BEGIN {max=0} {if ($3 > max) {max = $3; arch = $2}} END {print arch}')
-
     TARGET=$(ubus call system board | jsonfilter -e '@.release.target' | cut -d '/' -f 1)
     SUBTARGET=$(ubus call system board | jsonfilter -e '@.release.target' | cut -d '/' -f 2)
     VERSION=$(ubus call system board | jsonfilter -e '@.release.version')
@@ -324,7 +313,6 @@ wg_awg_setup() {
             read -r -p "Enter H3 value (from [Interface]):"$'\n' AWG_H3
             read -r -p "Enter H4 value (from [Interface]):"$'\n' AWG_H4
         elif [ "$CONFIG_TYPE" = '2' ]; then
-            #Default values to wg automatic obfuscation
             AWG_JC=4
             AWG_JMIN=40
             AWG_JMAX=70
@@ -399,14 +387,11 @@ wg_awg_setup() {
 }
 
 check_system() {
-    # Get router model
     MODEL=$(cat /tmp/sysinfo/model)
     echo "Router model: $MODEL"
 
-    # Check available space
     AVAILABLE_SPACE=$(df /tmp | awk 'NR==2 {print $4}')
-    # Change after switch sing-box
-    REQUIRED_SPACE=1024 # 20MB in KB
+    REQUIRED_SPACE=1024
 
     echo "Available space: $((AVAILABLE_SPACE/1024))MB"
     echo "Required space: $((REQUIRED_SPACE/1024))MB"
@@ -419,5 +404,4 @@ check_system() {
     fi
 }
 
-# Вызываем основную функцию
 main
