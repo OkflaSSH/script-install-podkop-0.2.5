@@ -1,6 +1,5 @@
 #!/bin/sh
 
-# Заменены на прямые ссылки на ваши файлы
 URL_PODKOP="https://raw.githubusercontent.com/OkflaSSH/script-install-podkop-0.2.5/main/podkop-0.2.5/podkop_0.2.5-1_all.ipk"
 URL_LUCI_APP="https://raw.githubusercontent.com/OkflaSSH/script-install-podkop-0.2.5/main/podkop-0.2.5/luci-app-podkop_0.2.5_all.ipk"
 URL_LUCI_I18N="https://raw.githubusercontent.com/OkflaSSH/script-install-podkop-0.2.5/main/podkop-0.2.5/luci-i18n-podkop-ru_0.2.5.ipk"
@@ -12,15 +11,11 @@ mkdir -p "$DOWNLOAD_DIR"
 main() {
     check_system
 
-    # Удалена динамическая загрузка, заменена на статическую загрузку файлов
-    echo "Download podkop_0.2.5-1_all.ipk..."
-    wget -q -O "$DOWNLOAD_DIR/podkop_0.2.5-1_all.ipk" "$URL_PODKOP"
-
-    echo "Download luci-app-podkop_0.2.5_all.ipk..."
-    wget -q -O "$DOWNLOAD_DIR/luci-app-podkop_0.2.5_all.ipk" "$URL_LUCI_APP"
-
-    echo "Download luci-i18n-podkop-ru_0.2.5.ipk..."
-    wget -q -O "$DOWNLOAD_DIR/luci-i18n-podkop-ru_0.2.5.ipk" "$URL_LUCI_I18N"
+    wget -qO- "$REPO" | grep -o 'https://[^"]*\.ipk' | while read -r url; do
+        filename=$(basename "$url")
+        echo "Download $filename..."
+        wget -q -O "$DOWNLOAD_DIR/$filename" "$url"
+    done
 
     echo "opkg update"
     opkg update
