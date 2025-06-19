@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# Прямые ссылки на ВАШИ файлы из репозитория OkflaSSH
 URL_PODKOP="https://raw.githubusercontent.com/OkflaSSH/script-install-podkop-0.2.5/main/podkop-0.2.5/podkop_0.2.5-1_all.ipk"
 URL_LUCI_APP="https://raw.githubusercontent.com/OkflaSSH/script-install-podkop-0.2.5/main/podkop-0.2.5/luci-app-podkop_0.2.5_all.ipk"
 URL_LUCI_I18N="https://raw.githubusercontent.com/OkflaSSH/script-install-podkop-0.2.5/main/podkop-0.2.5/luci-i18n-podkop-ru_0.2.5.ipk"
@@ -11,11 +12,17 @@ mkdir -p "$DOWNLOAD_DIR"
 main() {
     check_system
 
-    wget -qO- "$REPO" | grep -o 'https://[^"]*\.ipk' | while read -r url; do
-        filename=$(basename "$url")
-        echo "Download $filename..."
-        wget -q -O "$DOWNLOAD_DIR/$filename" "$url"
-    done
+    # --- СКАЧИВАНИЕ ВАШИХ ФАЙЛОВ ---
+    # Мы убрали сложную конструкцию с API и просто скачиваем нужные файлы напрямую
+    echo "Download podkop_0.2.5-1_all.ipk..."
+    wget -q -O "$DOWNLOAD_DIR/podkop_0.2.5-1_all.ipk" "$URL_PODKOP"
+
+    echo "Download luci-app-podkop_0.2.5_all.ipk..."
+    wget -q -O "$DOWNLOAD_DIR/luci-app-podkop_0.2.5_all.ipk" "$URL_LUCI_APP"
+
+    echo "Download luci-i18n-podkop-ru_0.2.5.ipk..."
+    wget -q -O "$DOWNLOAD_DIR/luci-i18n-podkop-ru_0.2.5.ipk" "$URL_LUCI_I18N"
+    # --- КОНЕЦ СКАЧИВАНИЯ ---
 
     echo "opkg update"
     opkg update
@@ -69,6 +76,7 @@ main() {
         add_tunnel
     fi
 
+    # Устанавливаем скачанные файлы по маске
     opkg install $DOWNLOAD_DIR/podkop*.ipk
     opkg install $DOWNLOAD_DIR/luci-app-podkop*.ipk
 
@@ -411,4 +419,5 @@ check_system() {
     fi
 }
 
+# Вызываем основную функцию
 main
